@@ -163,6 +163,10 @@
             margin-top: 15px;
         }
 
+        .final-score .result-label {
+            color: white;
+        }
+
         .final-score .result-value {
             color: white;
             font-size: 1.5em;
@@ -219,21 +223,24 @@
 
         .scenario-name-input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 15px;
+            font-size: 16px;
+            margin-bottom: 10px;
+            background: white;
         }
 
         .scenario-name-input:focus {
             outline: none;
             border-color: #11998e;
+            box-shadow: 0 0 0 3px rgba(17, 153, 142, 0.1);
         }
 
         .save-scenario-btn {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-            margin-top: 10px;
+            margin-top: 0;
+            margin-bottom: 10px;
         }
 
         .clear-all-btn {
@@ -245,6 +252,14 @@
         }
 
         .export-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+            margin: 0;
+        }
+
+        .export-json-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             padding: 8px 16px;
             font-size: 14px;
@@ -381,15 +396,6 @@
         </div>
 
         <button onclick="calculate()">Calculate Score</button>
-        
-        <button onclick="shareResults()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); display: none;" id="shareBtn">
-            📤 Share Results
-        </button>
-
-        <div style="margin-top: 15px; display: none;" id="saveScenarioSection">
-            <input type="text" id="scenarioName" class="scenario-name-input" placeholder="Enter scenario name (e.g., User A, Campaign 1)">
-            <button onclick="saveScenario()" class="save-scenario-btn">💾 Save to Scenarios</button>
-        </div>
 
         <!-- Results Section -->
         <div class="results" id="results">
@@ -474,6 +480,17 @@
                 </div>
                 <div class="result-value" id="fs">0</div>
             </div>
+
+            <!-- Save Scenario Section -->
+            <div style="margin-top: 20px;">
+                <input type="text" id="scenarioName" class="scenario-name-input" placeholder="Enter scenario name (e.g., User A, Campaign 1)">
+                <button onclick="saveScenario()" class="save-scenario-btn">💾 Save to Scenarios</button>
+            </div>
+
+            <!-- Share Results Button -->
+            <button onclick="shareResults()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);" id="shareBtn">
+                📤 Share Results
+            </button>
         </div>
 
         <!-- Scenarios Table Section -->
@@ -481,8 +498,9 @@
             <h2>
                 <span>📋 Saved Scenarios</span>
                 <div class="button-group">
-                    <button onclick="document.getElementById('importFileInput').click()" class="import-btn">📥 Import</button>
-                    <button onclick="exportScenarios()" class="export-btn">📤 Export</button>
+                    <button onclick="document.getElementById('importFileInput').click()" class="import-btn">📥 Import JSON</button>
+                    <button onclick="exportToExcel()" class="export-btn">📊 Export Excel</button>
+                    <button onclick="exportScenarios()" class="export-json-btn">📤 Export JSON</button>
                     <button onclick="clearAllScenarios()" class="clear-all-btn">🗑️ Clear All</button>
                 </div>
             </h2>
@@ -587,12 +605,6 @@
 
             // Show results section
             document.getElementById('results').classList.add('show');
-            
-            // Show share button
-            document.getElementById('shareBtn').style.display = 'block';
-
-            // Show save scenario section
-            document.getElementById('saveScenarioSection').style.display = 'block';
 
             // Smooth scroll to results
             document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -712,6 +724,87 @@
                 localStorage.removeItem('calculatorScenarios');
                 renderScenarios();
             }
+        }
+
+        // Export scenarios to Excel/CSV file
+        function exportToExcel() {
+            if (scenarios.length === 0) {
+                alert('No scenarios to export! Please save some scenarios first.');
+                return;
+            }
+
+            // Create CSV header
+            const headers = [
+                'Scenario Name',
+                'Clicks',
+                'S1 Sign-ups',
+                'S2 Sign-ups',
+                'S3 Sign-ups',
+                'Donations',
+                'SCR',
+                'DCR',
+                'C2',
+                'C3',
+                'S2C Score',
+                'S3C Score',
+                'Final Score',
+                'Saved Date'
+            ];
+
+            // Create CSV rows
+            const rows = scenarios.map(scenario => [
+                scenario.name,
+                scenario.clicks,
+                scenario.s1,
+                scenario.s2,
+                scenario.s3,
+                scenario.donations,
+                scenario.scr,
+                scenario.dcr,
+                scenario.c2,
+                scenario.c3,
+                parseFloat(scenario.s2) * parseFloat(scenario.c2) * 0.5,
+                parseFloat(scenario.s3) * parseFloat(scenario.c3) * 0.25,
+                scenario.finalScore,
+                scenario.timestamp || 'N/A'
+            ]);
+
+            // Combine headers and rows
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => {
+                    // Handle cells with commas or quotes
+                    const cellStr = String(cell);
+                    if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
+                        return `"${cellStr.replace(/"/g, '""')}"`;
+                    }
+                    return cellStr;
+                }).join(','))
+            ].join('\n');
+
+            // Create blob with BOM for Excel compatibility
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().split('T')[0];
+            link.download = `calculator-scenarios-${timestamp}.csv`;
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            
+            // Cleanup
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            // Show success message
+            alert(`✅ Exported ${scenarios.length} scenario(s) to Excel!\n\nThe file will open in Microsoft Excel or Google Sheets.`);
         }
 
         // Export scenarios to JSON file
