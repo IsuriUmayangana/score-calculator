@@ -168,6 +168,11 @@
             font-size: 1.5em;
         }
 
+        .final-score .formula {
+            color: white;
+            opacity: 0.9;
+        }
+
         .formula {
             font-size: 0.85em;
             color: #777;
@@ -237,6 +242,31 @@
             font-size: 14px;
             width: auto;
             margin: 0;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+            margin: 0;
+        }
+
+        .import-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+            margin: 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        #importFileInput {
+            display: none;
         }
 
         .scenarios-table-container {
@@ -447,11 +477,16 @@
         </div>
 
         <!-- Scenarios Table Section -->
-        <div class="scenarios-section" id="scenariosSection" style="display: none;">
+        <div class="scenarios-section" id="scenariosSection">
             <h2>
                 <span>📋 Saved Scenarios</span>
-                <button onclick="clearAllScenarios()" class="clear-all-btn">🗑️ Clear All</button>
+                <div class="button-group">
+                    <button onclick="document.getElementById('importFileInput').click()" class="import-btn">📥 Import</button>
+                    <button onclick="exportScenarios()" class="export-btn">📤 Export</button>
+                    <button onclick="clearAllScenarios()" class="clear-all-btn">🗑️ Clear All</button>
+                </div>
             </h2>
+            <input type="file" id="importFileInput" accept=".json" onchange="importScenarios(event)">
             <div class="scenarios-table-container">
                 <table class="scenarios-table" id="scenariosTable">
                     <thead>
@@ -628,17 +663,14 @@
         function renderScenarios() {
             const tableBody = document.getElementById('scenariosTableBody');
             const emptyState = document.getElementById('emptyState');
-            const scenariosSection = document.getElementById('scenariosSection');
             const scenariosTable = document.getElementById('scenariosTable');
 
             if (scenarios.length === 0) {
-                scenariosSection.style.display = 'block';
                 scenariosTable.style.display = 'none';
                 emptyState.style.display = 'block';
                 return;
             }
 
-            scenariosSection.style.display = 'block';
             scenariosTable.style.display = 'table';
             emptyState.style.display = 'none';
 
@@ -680,6 +712,131 @@
                 localStorage.removeItem('calculatorScenarios');
                 renderScenarios();
             }
+        }
+
+        // Export scenarios to JSON file
+        function exportScenarios() {
+            if (scenarios.length === 0) {
+                alert('No scenarios to export! Please save some scenarios first.');
+                return;
+            }
+
+            // Create data object with metadata
+            const exportData = {
+                exportDate: new Date().toISOString(),
+                totalScenarios: scenarios.length,
+                scenarios: scenarios
+            };
+
+            // Convert to JSON
+            const jsonString = JSON.stringify(exportData, null, 2);
+            
+            // Create blob
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            
+            // Create download link
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            
+            // Generate filename with timestamp
+            const timestamp = new Date().toISOString().split('T')[0];
+            link.download = `calculator-scenarios-${timestamp}.json`;
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            
+            // Cleanup
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+
+            // Show success message
+            alert(`✅ Exported ${scenarios.length} scenario(s) successfully!\n\nShare this file with others so they can import your scenarios.`);
+        }
+
+        // Import scenarios from JSON file
+        function importScenarios(event) {
+            const file = event.target.files[0];
+            
+            if (!file) {
+                return;
+            }
+
+            // Check file type
+            if (!file.name.endsWith('.json')) {
+                alert('❌ Please select a valid JSON file!');
+                event.target.value = ''; // Reset file input
+                return;
+            }
+
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    // Parse JSON
+                    const importData = JSON.parse(e.target.result);
+                    
+                    // Validate data structure
+                    if (!importData.scenarios || !Array.isArray(importData.scenarios)) {
+                        throw new Error('Invalid file format');
+                    }
+
+                    // Ask user if they want to merge or replace
+                    let shouldMerge = false;
+                    if (scenarios.length > 0) {
+                        shouldMerge = confirm(
+                            `You have ${scenarios.length} existing scenario(s).\n\n` +
+                            `Click OK to ADD imported scenarios (merge)\n` +
+                            `Click Cancel to REPLACE all existing scenarios`
+                        );
+                    }
+
+                    // Import scenarios
+                    if (shouldMerge) {
+                        // Merge: Add imported scenarios to existing ones
+                        // Update IDs to avoid conflicts
+                        const maxId = scenarios.length > 0 
+                            ? Math.max(...scenarios.map(s => s.id)) 
+                            : 0;
+                        
+                        importData.scenarios.forEach((scenario, index) => {
+                            scenario.id = maxId + index + 1;
+                            scenarios.push(scenario);
+                        });
+                    } else {
+                        // Replace: Clear existing and use imported
+                        scenarios = importData.scenarios;
+                    }
+
+                    // Save to localStorage
+                    localStorage.setItem('calculatorScenarios', JSON.stringify(scenarios));
+
+                    // Render updated table
+                    renderScenarios();
+
+                    // Show success message
+                    alert(
+                        `✅ Successfully imported ${importData.scenarios.length} scenario(s)!\n\n` +
+                        `Export date: ${new Date(importData.exportDate).toLocaleString()}\n` +
+                        `Total scenarios now: ${scenarios.length}`
+                    );
+
+                } catch (error) {
+                    alert('❌ Error importing file!\n\nPlease make sure you selected a valid exported scenarios file.');
+                    console.error('Import error:', error);
+                }
+            };
+
+            reader.onerror = function() {
+                alert('❌ Error reading file!');
+            };
+
+            // Read file
+            reader.readAsText(file);
+            
+            // Reset file input
+            event.target.value = '';
         }
 
         // Share results function
