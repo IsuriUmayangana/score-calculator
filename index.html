@@ -16,18 +16,16 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
         .container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
+            max-width: 1200px;
             width: 100%;
             padding: 40px;
+            margin: 0 auto;
         }
 
         h1 {
@@ -196,6 +194,118 @@
             color: #666;
             font-size: 0.9em;
         }
+
+        /* Scenario Table Styles */
+        .scenarios-section {
+            margin-top: 40px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #11998e;
+        }
+
+        .scenarios-section h2 {
+            color: #11998e;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scenario-name-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .scenario-name-input:focus {
+            outline: none;
+            border-color: #11998e;
+        }
+
+        .save-scenario-btn {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            margin-top: 10px;
+        }
+
+        .clear-all-btn {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            padding: 8px 16px;
+            font-size: 14px;
+            width: auto;
+            margin: 0;
+        }
+
+        .scenarios-table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        .scenarios-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .scenarios-table th {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .scenarios-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        .scenarios-table tr:hover {
+            background: #f5f7fa;
+        }
+
+        .scenarios-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .delete-btn {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: transform 0.2s;
+            width: auto;
+            margin: 0;
+        }
+
+        .delete-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .highlight-score {
+            font-weight: 700;
+            color: #667eea;
+        }
     </style>
 </head>
 <body>
@@ -245,6 +355,11 @@
         <button onclick="shareResults()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); display: none;" id="shareBtn">
             📤 Share Results
         </button>
+
+        <div style="margin-top: 15px; display: none;" id="saveScenarioSection">
+            <input type="text" id="scenarioName" class="scenario-name-input" placeholder="Enter scenario name (e.g., User A, Campaign 1)">
+            <button onclick="saveScenario()" class="save-scenario-btn">💾 Save to Scenarios</button>
+        </div>
 
         <!-- Results Section -->
         <div class="results" id="results">
@@ -330,9 +445,55 @@
                 <div class="result-value" id="fs">0</div>
             </div>
         </div>
+
+        <!-- Scenarios Table Section -->
+        <div class="scenarios-section" id="scenariosSection" style="display: none;">
+            <h2>
+                <span>📋 Saved Scenarios</span>
+                <button onclick="clearAllScenarios()" class="clear-all-btn">🗑️ Clear All</button>
+            </h2>
+            <div class="scenarios-table-container">
+                <table class="scenarios-table" id="scenariosTable">
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Clicks</th>
+                            <th>S1</th>
+                            <th>S2</th>
+                            <th>S3</th>
+                            <th>Donations</th>
+                            <th>SCR</th>
+                            <th>DCR</th>
+                            <th>C2</th>
+                            <th>C3</th>
+                            <th>Final Score</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scenariosTableBody">
+                        <!-- Scenarios will be added here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="emptyState" class="empty-state">
+                No saved scenarios yet. Calculate and save your first scenario above!
+            </div>
+        </div>
     </div>
 
     <script>
+        // Scenarios storage
+        let scenarios = [];
+
+        // Load scenarios from localStorage on page load
+        function loadScenarios() {
+            const saved = localStorage.getItem('calculatorScenarios');
+            if (saved) {
+                scenarios = JSON.parse(saved);
+                renderScenarios();
+            }
+        }
+
         function calculate() {
             // Get input values
             const clicks = parseFloat(document.getElementById('clicks').value) || 0;
@@ -395,8 +556,130 @@
             // Show share button
             document.getElementById('shareBtn').style.display = 'block';
 
+            // Show save scenario section
+            document.getElementById('saveScenarioSection').style.display = 'block';
+
             // Smooth scroll to results
             document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Save current calculation as a scenario
+        function saveScenario() {
+            const scenarioName = document.getElementById('scenarioName').value.trim();
+            
+            if (!scenarioName) {
+                alert('Please enter a scenario name!');
+                return;
+            }
+
+            // Get current values
+            const clicks = parseFloat(document.getElementById('clicks').value) || 0;
+            const signups = parseFloat(document.getElementById('signups').value) || 0;
+            const s2signups = parseFloat(document.getElementById('s2signups').value) || 0;
+            const s3signups = parseFloat(document.getElementById('s3signups').value) || 0;
+            const donations = parseFloat(document.getElementById('donations').value) || 0;
+
+            // Get calculated values
+            const scr = document.getElementById('scr').textContent;
+            const dcr = document.getElementById('dcr').textContent;
+            const c2 = document.getElementById('c2').textContent;
+            const c3 = document.getElementById('c3').textContent;
+            const fs = document.getElementById('fs').textContent;
+
+            // Create scenario object
+            const scenario = {
+                id: Date.now(),
+                name: scenarioName,
+                clicks: clicks,
+                s1: signups,
+                s2: s2signups,
+                s3: s3signups,
+                donations: donations,
+                scr: scr,
+                dcr: dcr,
+                c2: c2,
+                c3: c3,
+                finalScore: fs,
+                timestamp: new Date().toLocaleString()
+            };
+
+            // Add to scenarios array
+            scenarios.push(scenario);
+
+            // Save to localStorage
+            localStorage.setItem('calculatorScenarios', JSON.stringify(scenarios));
+
+            // Render scenarios table
+            renderScenarios();
+
+            // Clear scenario name input
+            document.getElementById('scenarioName').value = '';
+
+            // Show success message
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '✅ Saved!';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
+        }
+
+        // Render scenarios table
+        function renderScenarios() {
+            const tableBody = document.getElementById('scenariosTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const scenariosSection = document.getElementById('scenariosSection');
+            const scenariosTable = document.getElementById('scenariosTable');
+
+            if (scenarios.length === 0) {
+                scenariosSection.style.display = 'block';
+                scenariosTable.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            scenariosSection.style.display = 'block';
+            scenariosTable.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            tableBody.innerHTML = '';
+
+            scenarios.forEach((scenario, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${scenario.name}</strong></td>
+                    <td>${scenario.clicks}</td>
+                    <td>${scenario.s1}</td>
+                    <td>${scenario.s2}</td>
+                    <td>${scenario.s3}</td>
+                    <td>${scenario.donations}</td>
+                    <td>${scenario.scr}</td>
+                    <td>${scenario.dcr}</td>
+                    <td>${scenario.c2}</td>
+                    <td>${scenario.c3}</td>
+                    <td class="highlight-score">${scenario.finalScore}</td>
+                    <td><button class="delete-btn" onclick="deleteScenario(${scenario.id})">🗑️ Delete</button></td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Delete a scenario
+        function deleteScenario(id) {
+            if (confirm('Are you sure you want to delete this scenario?')) {
+                scenarios = scenarios.filter(s => s.id !== id);
+                localStorage.setItem('calculatorScenarios', JSON.stringify(scenarios));
+                renderScenarios();
+            }
+        }
+
+        // Clear all scenarios
+        function clearAllScenarios() {
+            if (confirm('Are you sure you want to delete ALL scenarios? This cannot be undone!')) {
+                scenarios = [];
+                localStorage.removeItem('calculatorScenarios');
+                renderScenarios();
+            }
         }
 
         // Share results function
@@ -456,7 +739,10 @@
         });
 
         // Load values from URL on page load
-        window.addEventListener('load', loadFromURL);
+        window.addEventListener('load', () => {
+            loadFromURL();
+            loadScenarios();
+        });
     </script>
 </body>
 </html>
