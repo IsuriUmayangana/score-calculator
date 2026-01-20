@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversion Score Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .results h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .result-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .result-value {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .final-score {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-size: 1.3em;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .final-score .result-value {
+            color: white;
+            font-size: 1.5em;
+        }
+
+        .formula {
+            font-size: 0.85em;
+            color: #777;
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .constants {
+            background: #e8eaf6;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .constants-title {
+            font-weight: 600;
+            color: #5e35b1;
+            margin-bottom: 8px;
+        }
+
+        .constant-item {
+            display: inline-block;
+            margin-right: 15px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Conversion Score Calculator</h1>
+
+        <!-- Input Metrics -->
+        <div class="section">
+            <h2>Input Metrics</h2>
+            <div class="row">
+                <div class="input-group">
+                    <label for="clicks">Clicks</label>
+                    <input type="number" id="clicks" min="0" value="0" placeholder="Enter number of clicks">
+                </div>
+                <div class="input-group">
+                    <label for="signups">S1 Sign-ups</label>
+                    <input type="number" id="signups" min="0" value="0" placeholder="Enter S1 sign-ups">
+                </div>
+                <div class="input-group">
+                    <label for="s2signups">S2 Sign-ups</label>
+                    <input type="number" id="s2signups" min="0" value="0" placeholder="Enter S2 sign-ups">
+                </div>
+            </div>
+            <div class="row">
+                <div class="input-group">
+                    <label for="s3signups">S3 Sign-ups</label>
+                    <input type="number" id="s3signups" min="0" value="0" placeholder="Enter S3 sign-ups">
+                </div>
+                <div class="input-group">
+                    <label for="donations">Donations</label>
+                    <input type="number" id="donations" min="0" value="0" placeholder="Enter number of donations">
+                </div>
+            </div>
+            <div class="constants">
+                <div class="constants-title">Constants:</div>
+                <span class="constant-item">α = 1</span>
+                <span class="constant-item">β = 1</span>
+                <span class="constant-item">Ws1 = 1</span>
+                <span class="constant-item">Wd = 1.5</span>
+                <span class="constant-item">Ws2 = 0.5</span>
+                <span class="constant-item">Ws3 = 0.25</span>
+            </div>
+        </div>
+
+        <button onclick="calculate()">Calculate Score</button>
+        
+        <button onclick="shareResults()" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); display: none;" id="shareBtn">
+            📤 Share Results
+        </button>
+
+        <!-- Results Section -->
+        <div class="results" id="results">
+            <h2>📈 Results</h2>
+            
+            <div class="result-item">
+                <div>
+                    <div class="result-label">Sign-up Conversion Rate (SCR)</div>
+                    <div class="formula">SCR = (Sign-ups + α) / (Clicks + α + β)</div>
+                </div>
+                <div class="result-value" id="scr">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
+                    <div class="result-label">Donation Conversion Rate (DCR)</div>
+                    <div class="formula">DCR = (Donations + α) / (Sign-ups + α + β)</div>
+                </div>
+                <div class="result-value" id="dcr">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
+                    <div class="result-label">Base Score</div>
+                    <div class="formula">Score = Ws1 × SCR + Wd × DCR</div>
+                </div>
+                <div class="result-value" id="score">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
+                    <div class="result-label">Main Score (MS)</div>
+                    <div class="formula">MS = Score × log(1 + Sign-ups + Donations)</div>
+                </div>
+                <div class="result-value" id="ms">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
+                    <div class="result-label">Main Score Expanded (MSE)</div>
+                    <div class="formula">MSE = MS × 100</div>
+                </div>
+                <div class="result-value" id="mse">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
+                    <div class="result-label">C2 (Conversion Factor L1→L2)</div>
+                    <div class="formula">C2 = S2 Sign-ups ÷ S1 Sign-ups</div>
+                </div>
+                <div class="result-value" id="c2">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
+                    <div class="result-label">S2C (Tier 2 Score)</div>
+                    <div class="formula">S2C = S2 Sign-ups × C2 × Ws2</div>
+                </div>
+                <div class="result-value" id="s2c">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
+                    <div class="result-label">C3 (Conversion Factor L2→L3)</div>
+                    <div class="formula">C3 = S3 Sign-ups ÷ S2 Sign-ups</div>
+                </div>
+                <div class="result-value" id="c3">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
+                    <div class="result-label">S3C (Tier 3 Score)</div>
+                    <div class="formula">S3C = S3 Sign-ups × C3 × Ws3</div>
+                </div>
+                <div class="result-value" id="s3c">0</div>
+            </div>
+
+            <div class="result-item final-score">
+                <div>
+                    <div class="result-label">🏆 Final Score (FS)</div>
+                    <div class="formula">FS = MS + S2C + S3C</div>
+                </div>
+                <div class="result-value" id="fs">0</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            // Get input values
+            const clicks = parseFloat(document.getElementById('clicks').value) || 0;
+            const signups = parseFloat(document.getElementById('signups').value) || 0;
+            const s2signups = parseFloat(document.getElementById('s2signups').value) || 0;
+            const s3signups = parseFloat(document.getElementById('s3signups').value) || 0;
+            const donations = parseFloat(document.getElementById('donations').value) || 0;
+
+            // Constants
+            const alpha = 1;
+            const beta = 1;
+            const ws1 = 1;
+            const wd = 1.5;
+            const ws2 = 0.5;
+            const ws3 = 0.25;
+
+            // Calculate Conversion Factors
+            const c2 = signups > 0 ? s2signups / signups : 0;
+            const c3 = s2signups > 0 ? s3signups / s2signups : 0;
+
+            // Calculate SCR (Sign-up Conversion Rate)
+            const scr = (signups + alpha) / (clicks + alpha + beta);
+
+            // Calculate DCR (Donation Conversion Rate)
+            const dcr = (donations + alpha) / (signups + alpha + beta);
+
+            // Calculate Base Score
+            const score = ws1 * scr + wd * dcr;
+
+            // Calculate Main Score (MS)
+            const ms = score * Math.log(1 + signups + donations);
+
+            // Calculate Main Score Expanded (MSE)
+            const mse = ms * 100;
+
+            // Calculate Tier 2 Score
+            const s2c = s2signups * c2 * ws2;
+
+            // Calculate Tier 3 Score
+            const s3c = s3signups * c3 * ws3;
+
+            // Calculate Final Score
+            const fs = ms + s2c + s3c;
+
+            // Display results
+            document.getElementById('scr').textContent = scr.toFixed(4);
+            document.getElementById('dcr').textContent = dcr.toFixed(4);
+            document.getElementById('score').textContent = score.toFixed(4);
+            document.getElementById('ms').textContent = ms.toFixed(6);
+            document.getElementById('mse').textContent = mse.toFixed(2);
+            document.getElementById('c2').textContent = c2.toFixed(2);
+            document.getElementById('s2c').textContent = s2c.toFixed(2);
+            document.getElementById('c3').textContent = c3.toFixed(2);
+            document.getElementById('s3c').textContent = s3c.toFixed(2);
+            document.getElementById('fs').textContent = fs.toFixed(2);
+
+            // Show results section
+            document.getElementById('results').classList.add('show');
+            
+            // Show share button
+            document.getElementById('shareBtn').style.display = 'block';
+
+            // Smooth scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Share results function
+        function shareResults() {
+            const clicks = document.getElementById('clicks').value || 0;
+            const signups = document.getElementById('signups').value || 0;
+            const s2signups = document.getElementById('s2signups').value || 0;
+            const s3signups = document.getElementById('s3signups').value || 0;
+            const donations = document.getElementById('donations').value || 0;
+
+            // Create URL with parameters
+            const baseUrl = window.location.origin + window.location.pathname;
+            const params = new URLSearchParams({
+                clicks: clicks,
+                s1: signups,
+                s2: s2signups,
+                s3: s3signups,
+                donations: donations
+            });
+            const shareUrl = `${baseUrl}?${params.toString()}`;
+
+            // Copy to clipboard
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                const btn = document.getElementById('shareBtn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '✅ Link Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                }, 2000);
+            }).catch(() => {
+                // Fallback for older browsers
+                prompt('Copy this link to share:', shareUrl);
+            });
+        }
+
+        // Load values from URL parameters on page load
+        function loadFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            
+            if (params.has('clicks')) {
+                document.getElementById('clicks').value = params.get('clicks');
+                document.getElementById('signups').value = params.get('s1') || 0;
+                document.getElementById('s2signups').value = params.get('s2') || 0;
+                document.getElementById('s3signups').value = params.get('s3') || 0;
+                document.getElementById('donations').value = params.get('donations') || 0;
+                
+                // Auto-calculate if parameters are present
+                calculate();
+            }
+        }
+
+        // Allow Enter key to calculate
+        document.addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                calculate();
+            }
+        });
+
+        // Load values from URL on page load
+        window.addEventListener('load', loadFromURL);
+    </script>
+</body>
+</html>
