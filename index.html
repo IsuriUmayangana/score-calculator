@@ -387,7 +387,6 @@
             <div class="constants">
                 <div class="constants-title">Constants:</div>
                 <span class="constant-item">α = 1</span>
-                <span class="constant-item">β = 1</span>
                 <span class="constant-item">Ws1 = 2.5</span>
                 <span class="constant-item">Wd = 1.5</span>
                 <span class="constant-item">Ws2 = 0.5</span>
@@ -404,7 +403,7 @@
             <div class="result-item">
                 <div>
                     <div class="result-label">Sign-up Conversion Rate (SCR)</div>
-                    <div class="formula">SCR = (Sign-ups + α) / (Clicks + α + β)</div>
+                    <div class="formula">SCR = (Sign-ups + 1) / (Clicks + 1)</div>
                 </div>
                 <div class="result-value" id="scr">0</div>
             </div>
@@ -412,7 +411,7 @@
             <div class="result-item">
                 <div>
                     <div class="result-label">Donation Conversion Rate (DCR)</div>
-                    <div class="formula">DCR = (Donations + α) / (Sign-ups + α + β)</div>
+                    <div class="formula">DCR = (Donations + 1) / (Sign-ups + 1)</div>
                 </div>
                 <div class="result-value" id="dcr">0</div>
             </div>
@@ -492,7 +491,7 @@
             <div class="result-item final-score">
                 <div>
                     <div class="result-label">🏆 Final Score (FS)</div>
-                    <div class="formula">FS = MS + S2 + S3</div>
+                    <div class="formula">FS = MSE + S2 + S3</div>
                 </div>
                 <div class="result-value" id="fs">0</div>
             </div>
@@ -584,10 +583,10 @@
             const c3 = s2signups > 0 ? s3signups / s2signups : 0;
 
             // Calculate SCR (Sign-up Conversion Rate) with smoothing
-            const scr = (signups + alpha) / (clicks + alpha + beta);
+            const scr = (signups + alpha) / (clicks + alpha);
 
             // Calculate DCR (Donation Conversion Rate) with smoothing
-            const dcr = (donations + alpha) / (signups + alpha + beta);
+            const dcr = (donations + alpha) / (signups + alpha);
 
             // Calculate Base Score
             const score = ws1 * scr + wd * dcr;
@@ -611,7 +610,7 @@
             const s3c = s3signups * c3 * ws3;
 
             // Calculate Final Score
-            const fs = ms + s2c + s3c;
+            const fs = mse + s2c + s3c;
 
             // Display results
             document.getElementById('scr').textContent = scr.toFixed(4);
