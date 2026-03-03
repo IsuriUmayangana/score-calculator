@@ -426,24 +426,32 @@
 
             <div class="result-item">
                 <div>
-                    <div class="result-label">Conversion Efficiency</div>
-                    <div class="formula">Conversion Efficiency = (S1 + Donations) / max(Clicks, 1)</div>
+                    <div class="result-label">Efficiency</div>
+                    <div class="formula">Efficiency = (Sign-ups + Donations) / Clicks</div>
                 </div>
                 <div class="result-value" id="convEff">0</div>
             </div>
 
             <div class="result-item">
                 <div>
-                    <div class="result-label">Efficiency Bonus</div>
-                    <div class="formula">Efficiency Bonus = log(1 + Conversion Efficiency)</div>
+                    <div class="result-label">Multiplier</div>
+                    <div class="formula">Multiplier = Efficiency ^ 0.5</div>
                 </div>
                 <div class="result-value" id="effBonus">0</div>
             </div>
 
             <div class="result-item">
                 <div>
+                    <div class="result-label">Log Volume</div>
+                    <div class="formula">Log Volume = log(1 + Sign-ups + Donations)</div>
+                </div>
+                <div class="result-value" id="logVolume">0</div>
+            </div>
+
+            <div class="result-item">
+                <div>
                     <div class="result-label">Main Score (MS)</div>
-                    <div class="formula">MS = (Ws1 × SCR + Wd × DCR) × log(1 + Sign-ups + Donations) × (1 + Efficiency Bonus)</div>
+                    <div class="formula">MS = Base Score × Log Volume × Multiplier</div>
                 </div>
                 <div class="result-value" id="ms">0</div>
             </div>
@@ -451,7 +459,7 @@
             <div class="result-item">
                 <div>
                     <div class="result-label">Main Score Expanded (MSE)</div>
-                    <div class="formula">MSE = (Ws1 × SCR + Wd × DCR) × log(1 + Sign-ups + Donations) × (1 + Efficiency Bonus) × 100</div>
+                    <div class="formula">MSE = MS × 100</div>
                 </div>
                 <div class="result-value" id="mse">0</div>
             </div>
@@ -591,14 +599,17 @@
             // Calculate Base Score
             const score = ws1 * scr + wd * dcr;
 
-            // Calculate Conversion Efficiency
-            const convEff = (signups + donations) / Math.max(clicks, 1);
+            // Calculate Efficiency
+            const convEff = clicks > 0 ? (signups + donations) / clicks : 0;
 
-            // Calculate Efficiency Bonus
-            const effBonus = Math.log(1 + convEff);
+            // Calculate Multiplier
+            const effBonus = Math.pow(convEff, 0.5);
+
+            // Calculate Log Volume
+            const logVolume = Math.log(1 + signups + donations);
 
             // Calculate Main Score (MS)
-            const ms = score * Math.log(1 + signups + donations) * (1 + effBonus);
+            const ms = score * logVolume * effBonus;
 
             // Calculate Main Score Expanded (MSE)
             const mse = ms * 100;
@@ -618,6 +629,7 @@
             document.getElementById('score').textContent = score.toFixed(4);
             document.getElementById('convEff').textContent = convEff.toFixed(4);
             document.getElementById('effBonus').textContent = effBonus.toFixed(4);
+            document.getElementById('logVolume').textContent = logVolume.toFixed(4);
             document.getElementById('ms').textContent = ms.toFixed(6);
             document.getElementById('mse').textContent = mse.toFixed(4);
             document.getElementById('c2').textContent = c2.toFixed(2);
