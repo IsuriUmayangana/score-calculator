@@ -389,8 +389,8 @@
                 <span class="constant-item">α = 1</span>
                 <span class="constant-item">Ws1 = 1.5</span>
                 <span class="constant-item">Wd = 2.5</span>
-                <span class="constant-item">Ws2 = 0.5</span>
-                <span class="constant-item">Ws3 = 0.25</span>
+                <span class="constant-item">Ws2 = 1.25</span>
+                <span class="constant-item">Ws3 = 1</span>
             </div>
         </div>
 
@@ -583,8 +583,8 @@
             const beta = 1;
             const ws1 = 1.5;
             const wd = 2.5;
-            const ws2 = 0.5;
-            const ws3 = 0.25;
+            const ws2 = 1.25;
+            const ws3 = 1;
 
             // Calculate Conversion Factors
             const c2 = signups > 0 ? s2signups / signups : 0;
@@ -798,8 +798,8 @@
                 scenario.dcr,
                 scenario.c2,
                 scenario.c3,
-                parseFloat(scenario.s2) * parseFloat(scenario.c2) * 0.5,
-                parseFloat(scenario.s3) * parseFloat(scenario.c3) * 0.25,
+                parseFloat(scenario.s2) * parseFloat(scenario.c2) * 1.25,
+                parseFloat(scenario.s3) * parseFloat(scenario.c3) * 1,
                 scenario.finalScore,
                 scenario.timestamp || 'N/A'
             ]);
