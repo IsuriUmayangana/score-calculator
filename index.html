@@ -387,10 +387,10 @@
             <div class="constants">
                 <div class="constants-title">Constants:</div>
                 <span class="constant-item">α = 1</span>
-                <span class="constant-item">Ws1 = 1.5</span>
-                <span class="constant-item">Wd = 25</span>
-                <span class="constant-item">Ws2 = 1.25</span>
-                <span class="constant-item">Ws3 = 1</span>
+                <span class="constant-item">Ws1 = 3</span>
+                <span class="constant-item">Wd = 30</span>
+                <span class="constant-item">Ws2 = 1.5</span>
+                <span class="constant-item">Ws3 = 0.75</span>
             </div>
         </div>
 
@@ -419,7 +419,7 @@
             <div class="result-item">
                 <div>
                     <div class="result-label">Base Score</div>
-                    <div class="formula">Base Score = (1.5 × SCR) + (2.5 × DCR)</div>
+                    <div class="formula">Base Score = (3 × SCR) + (30 × DCR)</div>
                 </div>
                 <div class="result-value" id="score">0</div>
             </div>
@@ -581,10 +581,10 @@
             // Constants
             const alpha = 1;
             const beta = 1;
-            const ws1 = 1.5;
-            const wd = 25;
-            const ws2 = 1.25;
-            const ws3 = 1;
+            const ws1 = 3;
+            const wd = 30;
+            const ws2 = 1.5;
+            const ws3 = 0.75;
 
             // Calculate Conversion Factors
             const c2 = signups > 0 ? s2signups / signups : 0;
@@ -798,8 +798,8 @@
                 scenario.dcr,
                 scenario.c2,
                 scenario.c3,
-                parseFloat(scenario.s2) * parseFloat(scenario.c2) * 1.25,
-                parseFloat(scenario.s3) * parseFloat(scenario.c3) * 1,
+                parseFloat(scenario.s2) * parseFloat(scenario.c2) * 1.5,
+                parseFloat(scenario.s3) * parseFloat(scenario.c3) * 0.75,
                 scenario.finalScore,
                 scenario.timestamp || 'N/A'
             ]);
